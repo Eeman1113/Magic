@@ -3,7 +3,7 @@ import random
 
 class Card:
     """Represents a playing card with value and suit."""
-    SUITS = ['♣', '♥', '♠', '♦']
+    suits = ['♣', '♥', '♠', '♦']  # Changed back to suits to match original usage
     FACE_VALUES = {1: 'A', 11: 'J', 12: 'Q', 13: 'K'}
 
     def __init__(self, value: int, suit: str):
@@ -16,8 +16,8 @@ class Card:
         """
         if value not in range(1, 14):
             raise ValueError("Card value must be between 1 and 13")
-        if suit not in self.SUITS:
-            raise ValueError(f"Invalid suit. Must be one of {self.SUITS}")
+        if suit not in self.suits:
+            raise ValueError(f"Invalid suit. Must be one of {self.suits}")
         
         self.value = value
         self.suit = suit
