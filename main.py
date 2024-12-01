@@ -44,12 +44,12 @@ def magic_number_trick():
                 # Add the first number of the card to the secret number
                 st.session_state.secret_number += current_card[0]
                 st.session_state.step += 1
-                st.experimental_rerun()
+                st.rerun()
         
         with col2:
             if st.button("NO, my number is not on this card"):
                 st.session_state.step += 1
-                st.experimental_rerun()
+                st.rerun()
         
         # Display the current card's numbers
         st.write("Numbers on this card:")
@@ -64,7 +64,7 @@ def magic_number_trick():
         if st.button("Play Again"):
             st.session_state.step = 0
             st.session_state.secret_number = 0
-            st.experimental_rerun()
+            st.rerun()
 
 # Run the Streamlit app
 if __name__ == "__main__":
