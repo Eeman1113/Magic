@@ -3,7 +3,7 @@ import random
 
 class Card:
     """Represents a playing card with value and suit."""
-    suits = ['♣', '♥', '♠', '♦']  # Changed back to suits to match original usage
+    suits = ['♣', '♥', '♠', '♦']
     FACE_VALUES = {1: 'A', 11: 'J', 12: 'Q', 13: 'K'}
 
     def __init__(self, value: int, suit: str):
@@ -112,9 +112,8 @@ def twenty_one_card_trick():
         st.balloons()
         
         if st.button("Play Again"):
-            st.session_state.game = TwentyOneCardTrick()
-            st.session_state.game_over = False
-            st.experimental_rerun()
+            st.session_state.clear()  # Clear the entire session state
+            st.rerun()  # Use st.rerun() instead of experimental_rerun()
         return
 
     st.write("Think of a card from the following rows. Select the row containing your card!")
@@ -138,7 +137,7 @@ def twenty_one_card_trick():
         selected_row_num = row_map[selected_row]
         
         game.play_round(selected_row_num)
-        st.experimental_rerun()
+        st.rerun()  # Use st.rerun() instead of experimental_rerun()
 
 def main():
     twenty_one_card_trick()
