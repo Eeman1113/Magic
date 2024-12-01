@@ -30,8 +30,7 @@ class MindReadingTrick:
         ### {card['title']}
         *{card['hint']}*
         
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; 
-                     background-color: rgba(0,0,0,0.05); 
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;  
                      border-radius: 10px; 
                      padding: 15px;">
             {''.join([f'<div style="background-color: #4CAF50; color: white; padding: 10px; border-radius: 5px; min-width: 40px; text-align: center;">{num}</div>' for num in card['numbers']])}
