@@ -2,112 +2,147 @@ import streamlit as st
 import random
 
 class Card:
-    suits = ['♣','♥', '♠', '♦']
-    
-    def __init__(self, value, suit):
+    """Represents a playing card with value and suit."""
+    SUITS = ['♣', '♥', '♠', '♦']
+    FACE_VALUES = {1: 'A', 11: 'J', 12: 'Q', 13: 'K'}
+
+    def __init__(self, value: int, suit: str):
+        """
+        Initialize a card with validation.
+        
+        Args:
+            value (int): Card value (1-13)
+            suit (str): Card suit
+        """
         if value not in range(1, 14):
-            raise ValueError("Card value must be integer from 1 to 13")
-        if suit not in self.suits:
-            raise ValueError(f"Suit must be one of {self.suits}")
+            raise ValueError("Card value must be between 1 and 13")
+        if suit not in self.SUITS:
+            raise ValueError(f"Invalid suit. Must be one of {self.SUITS}")
+        
         self.value = value
         self.suit = suit
-    
+
     @property
-    def display_value(self):
-        named_values = {1: "A", 11: "J", 12: "Q", 13: "K"}
-        return named_values.get(self.value, str(self.value))
-    
-    def __repr__(self):
+    def display_value(self) -> str:
+        """
+        Return a string representation of card value.
+        
+        Returns:
+            str: Formatted card value
+        """
+        return self.FACE_VALUES.get(self.value, str(self.value))
+
+    def __repr__(self) -> str:
+        """
+        String representation of the card.
+        
+        Returns:
+            str: Card display (e.g., '7♥')
+        """
         return f"{self.display_value}{self.suit}"
 
-def collect_packets(row, *packets):
-    """
-    Assemble packets such that the selected packet is sandwiched in the middle.
-    """
-    if len(packets) != 3 or row not in range(1, 4):
-        raise ValueError(
-            "collect_packets expects a 'row' value from 1-3 and three packets"
+class TwentyOneCardTrick:
+    """Implements the 21 Card Trick magic game."""
+
+    def __init__(self):
+        """Initialize game state."""
+        self.deck = [Card(val, suit) for val in range(1, 14) for suit in Card.suits]
+        random.shuffle(self.deck)
+        self.packet = self.deck[:21]
+        self.round = 0
+
+    def collect_packets(self, row: int, packets: list) -> list:
+        """
+        Rearrange card packets based on selected row.
+        
+        Args:
+            row (int): Selected row (1-3)
+            packets (list): Three card packets
+        
+        Returns:
+            list: Rearranged packet
+        """
+        if row not in range(1, 4):
+            raise ValueError("Row must be between 1 and 3")
+        
+        # Rearrange packets with selected row in the middle
+        if row == 1:
+            return packets[1] + packets[0] + packets[2]
+        if row == 2:
+            return packets[0] + packets[1] + packets[2]
+        return packets[0] + packets[2] + packets[1]
+
+    def split_into_rows(self) -> tuple:
+        """
+        Split packet into three rows.
+        
+        Returns:
+            tuple: Three card rows
+        """
+        return (
+            self.packet[0::3],   # First row
+            self.packet[1::3],   # Second row
+            self.packet[2::3]    # Third row
         )
-    if row == 1:
-        return packets[1] + packets[0] + packets[2]
-    if row == 2:
-        return packets[0] + packets[1] + packets[2]
-    return packets[0] + packets[2] + packets[1]
+
+    def play_round(self, selected_row: int):
+        """
+        Play a round of the trick.
+        
+        Args:
+            selected_row (int): User-selected row
+        """
+        rows = self.split_into_rows()
+        self.packet = self.collect_packets(selected_row, rows)
+        self.round += 1
 
 def twenty_one_card_trick():
-    # Initialize the deck
-    if 'deck_initialized' not in st.session_state:
-        deck = [Card(val, suit) for val in range(1, 14) for suit in Card.suits]
-        random.shuffle(deck)
-        st.session_state.packet = deck[:21]
-        st.session_state.round = 0
-        st.session_state.deck_initialized = True
-        st.session_state.game_over = False
-        st.session_state.row_selection = None
-
-    # Display current state of the game
+    """Main Streamlit app for the 21 Card Trick."""
     st.title("🃏 The 21 Card Trick 🎩")
-    
-    # Check if game is over
-    if st.session_state.game_over:
-        st.success(f"Your card is the: {st.session_state.packet[10]}")
+
+    # Initialize or retrieve game state
+    if 'game' not in st.session_state:
+        st.session_state.game = TwentyOneCardTrick()
+        st.session_state.game_over = False
+
+    game = st.session_state.game
+
+    if game.round >= 3:
+        st.success(f"Your card is: {game.packet[10]}")
+        st.balloons()
+        
         if st.button("Play Again"):
-            # Reset all session state
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
+            st.session_state.game = TwentyOneCardTrick()
+            st.session_state.game_over = False
+            st.experimental_rerun()
         return
 
-    st.write("Think of a card from the following rows. When you've memorized your card, select the row it's in!")
-    
-    # Create three columns to display the rows
-    col1, col2, col3 = st.columns(3)
-    
-    first_packet = []
-    second_packet = []
-    third_packet = []
-    
-    for i in range(0, 21, 3):
-        first_packet.append(st.session_state.packet[i])
-        second_packet.append(st.session_state.packet[i + 1])
-        third_packet.append(st.session_state.packet[i + 2])
-    
-    with col1:
-        st.write("Row 1")
-        for card in first_packet:
-            st.write(str(card))
-    
-    with col2:
-        st.write("Row 2")
-        for card in second_packet:
-            st.write(str(card))
-    
-    with col3:
-        st.write("Row 3")
-        for card in third_packet:
-            st.write(str(card))
-    
+    st.write("Think of a card from the following rows. Select the row containing your card!")
+
+    # Display rows
+    rows = game.split_into_rows()
+    cols = st.columns(3)
+    row_names = ["Row 1", "Row 2", "Row 3"]
+
+    for i, (row, col) in enumerate(zip(rows, cols)):
+        with col:
+            st.write(row_names[i])
+            for card in row:
+                st.write(str(card))
+
     # Row selection
-    row_selection = st.radio("Select the row containing your card:", 
-                              ["Row 1", "Row 2", "Row 3"])
-    
-    # Confirm button
-    if st.button("Confirm Row"):
-        # Convert row selection to number
-        row_num = {"Row 1": 1, "Row 2": 2, "Row 3": 3}[row_selection]
+    selected_row = st.radio("Select the row with your card:", row_names)
+
+    if st.button("Next"):
+        row_map = {"Row 1": 1, "Row 2": 2, "Row 3": 3}
+        selected_row_num = row_map[selected_row]
         
-        # Update packet and increment round
-        st.session_state.packet = collect_packets(row_num, first_packet, second_packet, third_packet)
-        st.session_state.round += 1
-        
-        # Check if we've completed 3 rounds
-        if st.session_state.round >= 3:
-            st.balloons()
-            st.session_state.game_over = True
-            st.rerun()
+        game.play_round(selected_row_num)
+        st.experimental_rerun()
 
 def main():
     twenty_one_card_trick()
 
 if __name__ == "__main__":
     main()
+    
