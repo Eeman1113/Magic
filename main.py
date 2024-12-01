@@ -33,18 +33,33 @@ class MindReadingTrick:
         <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;  
                      border-radius: 10px; 
                      padding: 15px;">
-            {''.join([f'<div style="background-color: #4CAF50; color: white; padding: 10px; border-radius: 5px; min-width: 40px; text-align: center;">{num}</div>' for num in card['numbers']])}
+            {''.join([f'<div style="background-color: #2C3E50; color: #ECF0F1; padding: 10px; border-radius: 5px; min-width: 40px; text-align: center; border: 1px solid #34495E;">{num}</div>' for num in card['numbers']])}
         </div>
         """, unsafe_allow_html=True)
 
     def magic_trick_app(self):
-        # Custom CSS for a more magical feel
+        # Dark mode custom CSS
         st.markdown("""
         <style>
         .stApp {
-            background-color: #f0f2f6;
-            background-image: radial-gradient(rgba(100,100,255,0.1) 10%, transparent 10%);
-            background-size: 20px 20px;
+            background-color: #121212;
+            color: #FFFFFF;
+        }
+        .stMarkdown, .stTitle, .stButton>button {
+            color: #FFFFFF !important;
+        }
+        .stInfo {
+            background-color: #1E1E1E !important;
+            color: #BB86FC !important;
+            border-color: #BB86FC !important;
+        }
+        .stButton>button {
+            background-color: #BB86FC !important;
+            color: #000000 !important;
+        }
+        .stButton>button:hover {
+            background-color: #3700B3 !important;
+            color: #FFFFFF !important;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -98,15 +113,6 @@ class MindReadingTrick:
                 st.write("Synchronizing thought patterns...")
             
             st.title(f"🎉 Your Number is Magically... {st.session_state.secret_number}! 🎉")
-            
-            # # Explanation of the trick
-            # with st.expander("🧠 How Does This Work?"):
-            #     st.markdown("""
-            #     This trick uses binary representation:
-            #     - Each card represents a binary digit
-            #     - By tracking which cards contain your number
-            #     - We reconstruct the exact number through binary magic! 
-            #     """)
             
             # Play Again
             if st.button("🔁 Play Again"):
