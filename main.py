@@ -24,7 +24,7 @@ def collect_packets(row, *packets):
     """
     Assemble packets such that the selected packet is sandwiched in the middle.
     """
-    if len(packets) != 3 or 1 > row > 3:
+    if len(packets) != 3 or row not in range(1, 4):
         raise ValueError(
             "collect_packets expects a 'row' value from 1-3 and three packets"
         )
@@ -43,6 +43,7 @@ def twenty_one_card_trick():
         st.session_state.round = 0
         st.session_state.deck_initialized = True
         st.session_state.game_over = False
+        st.session_state.row_selection = None
 
     # Display current state of the game
     st.title("🃏 The 21 Card Trick 🎩")
@@ -52,42 +53,45 @@ def twenty_one_card_trick():
         st.success(f"Your card is the: {st.session_state.packet[10]}")
         if st.button("Play Again"):
             # Reset all session state
-            del st.session_state.deck_initialized
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
             st.rerun()
         return
 
-    st.write("Think of a card from the following rows. When you've memorized your card, click the row it's in!")
-
+    st.write("Think of a card from the following rows. When you've memorized your card, select the row it's in!")
+    
     # Create three columns to display the rows
     col1, col2, col3 = st.columns(3)
-
+    
     first_packet = []
     second_packet = []
     third_packet = []
+    
     for i in range(0, 21, 3):
-        first_packet.insert(0, st.session_state.packet[i])
-        second_packet.insert(0, st.session_state.packet[i + 1])
-        third_packet.insert(0, st.session_state.packet[i + 2])
-
+        first_packet.append(st.session_state.packet[i])
+        second_packet.append(st.session_state.packet[i + 1])
+        third_packet.append(st.session_state.packet[i + 2])
+    
     with col1:
         st.write("Row 1")
         for card in first_packet:
             st.write(str(card))
-
+    
     with col2:
         st.write("Row 2")
         for card in second_packet:
             st.write(str(card))
-
+    
     with col3:
         st.write("Row 3")
         for card in third_packet:
             st.write(str(card))
-
-    # Buttons for selecting the row
+    
+    # Row selection
     row_selection = st.radio("Select the row containing your card:", 
                               ["Row 1", "Row 2", "Row 3"])
-
+    
+    # Confirm button
     if st.button("Confirm Row"):
         # Convert row selection to number
         row_num = {"Row 1": 1, "Row 2": 2, "Row 3": 3}[row_selection]
@@ -95,7 +99,7 @@ def twenty_one_card_trick():
         # Update packet and increment round
         st.session_state.packet = collect_packets(row_num, first_packet, second_packet, third_packet)
         st.session_state.round += 1
-
+        
         # Check if we've completed 3 rounds
         if st.session_state.round >= 3:
             st.balloons()
