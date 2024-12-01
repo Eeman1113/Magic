@@ -2,7 +2,7 @@ import streamlit as st
 import random
 
 class Card:
-    suits = ["Clubs", "Hearts", "Spades", "Diamonds"]
+    suits = ['♣','♥', '♠', '♦']
     
     def __init__(self, value, suit):
         if value not in range(1, 14):
@@ -14,11 +14,11 @@ class Card:
     
     @property
     def display_value(self):
-        named_values = {1: "Ace", 11: "Jack", 12: "Queen", 13: "King"}
-        return named_values.get(self.value, self.value)
+        named_values = {1: "A", 11: "J", 12: "Q", 13: "K"}
+        return named_values.get(self.value, str(self.value))
     
     def __repr__(self):
-        return f"{self.display_value} of {self.suit}"
+        return f"{self.display_value}{self.suit}"
 
 def collect_packets(row, *packets):
     """
@@ -36,17 +36,26 @@ def collect_packets(row, *packets):
 
 def twenty_one_card_trick():
     # Initialize the deck
-    deck = [Card(val, suit) for val in range(1, 14) for suit in Card.suits]
-    random.shuffle(deck)
-    packet = deck[:21]
-
-    # Streamlit state to track the current round and packet
-    if 'round' not in st.session_state:
+    if 'deck_initialized' not in st.session_state:
+        deck = [Card(val, suit) for val in range(1, 14) for suit in Card.suits]
+        random.shuffle(deck)
+        st.session_state.packet = deck[:21]
         st.session_state.round = 0
-        st.session_state.packet = packet
+        st.session_state.deck_initialized = True
+        st.session_state.game_over = False
 
     # Display current state of the game
     st.title("🃏 The 21 Card Trick 🎩")
+    
+    # Check if game is over
+    if st.session_state.game_over:
+        st.success(f"Your card is the: {st.session_state.packet[10]}")
+        if st.button("Play Again"):
+            # Reset all session state
+            del st.session_state.deck_initialized
+            st.rerun()
+        return
+
     st.write("Think of a card from the following rows. When you've memorized your card, click the row it's in!")
 
     # Create three columns to display the rows
@@ -90,12 +99,8 @@ def twenty_one_card_trick():
         # Check if we've completed 3 rounds
         if st.session_state.round >= 3:
             st.balloons()
-            st.success(f"Your card is the: {st.session_state.packet[10]}")
-            
-            # Reset the game
-            st.button("Play Again")
-            st.session_state.round = 0
-            st.experimental_rerun()
+            st.session_state.game_over = True
+            st.rerun()
 
 def main():
     twenty_one_card_trick()
