@@ -1,129 +1,104 @@
 import streamlit as st
 import random
 
-class MindReadingTrick:
-    def __init__(self):
-        # Enhanced magic cards with more interesting presentation
-        self.magic_cards = [
-            {"title": "🌟 Cosmic Numbers", "numbers": [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31], "hint": "Sparkling odd numbers"},
-            {"title": "🔢 Binary Signals", "numbers": [2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31], "hint": "Digital wave patterns"},
-            {"title": "🧩 Puzzle Pieces", "numbers": [4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31], "hint": "Interlocking sequences"},
-            {"title": "🌈 Color Spectrum", "numbers": [8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31], "hint": "Chromatic variations"},
-            {"title": "🌙 Lunar Sequence", "numbers": [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], "hint": "Moonlight whispers"},
-            {"title": "⚡ Energy Nodes", "numbers": [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], "hint": "Power frequencies"},
-            {"title": "🌐 Global Network", "numbers": [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63], "hint": "Connection matrix"}
-        ]
+class Card:
+    suits = ["Clubs", "Hearts", "Spades", "Diamonds"]
+    
+    def __init__(self, value, suit):
+        if value not in range(1, 14):
+            raise ValueError("Card value must be integer from 1 to 13")
+        if suit not in self.suits:
+            raise ValueError(f"Suit must be one of {self.suits}")
+        self.value = value
+        self.suit = suit
+    
+    @property
+    def display_value(self):
+        named_values = {1: "Ace", 11: "Jack", 12: "Queen", 13: "King"}
+        return named_values.get(self.value, self.value)
+    
+    def __repr__(self):
+        return f"{self.display_value} of {self.suit}"
+
+def collect_packets(row, *packets):
+    """
+    Assemble packets such that the selected packet is sandwiched in the middle.
+    """
+    if len(packets) != 3 or 1 > row > 3:
+        raise ValueError(
+            "collect_packets expects a 'row' value from 1-3 and three packets"
+        )
+    if row == 1:
+        return packets[1] + packets[0] + packets[2]
+    if row == 2:
+        return packets[0] + packets[1] + packets[2]
+    return packets[0] + packets[2] + packets[1]
+
+def twenty_one_card_trick():
+    # Initialize the deck
+    deck = [Card(val, suit) for val in range(1, 14) for suit in Card.suits]
+    random.shuffle(deck)
+    packet = deck[:21]
+
+    # Streamlit state to track the current round and packet
+    if 'round' not in st.session_state:
+        st.session_state.round = 0
+        st.session_state.packet = packet
+
+    # Display current state of the game
+    st.title("🃏 The 21 Card Trick 🎩")
+    st.write("Think of a card from the following rows. When you've memorized your card, click the row it's in!")
+
+    # Create three columns to display the rows
+    col1, col2, col3 = st.columns(3)
+
+    first_packet = []
+    second_packet = []
+    third_packet = []
+    for i in range(0, 21, 3):
+        first_packet.insert(0, st.session_state.packet[i])
+        second_packet.insert(0, st.session_state.packet[i + 1])
+        third_packet.insert(0, st.session_state.packet[i + 2])
+
+    with col1:
+        st.write("Row 1")
+        for card in first_packet:
+            st.write(str(card))
+
+    with col2:
+        st.write("Row 2")
+        for card in second_packet:
+            st.write(str(card))
+
+    with col3:
+        st.write("Row 3")
+        for card in third_packet:
+            st.write(str(card))
+
+    # Buttons for selecting the row
+    row_selection = st.radio("Select the row containing your card:", 
+                              ["Row 1", "Row 2", "Row 3"])
+
+    if st.button("Confirm Row"):
+        # Convert row selection to number
+        row_num = {"Row 1": 1, "Row 2": 2, "Row 3": 3}[row_selection]
         
-        # AI-like explanations
-        self.ai_explanations = [
-            "Quantum probability algorithms detecting your thought pattern...",
-            "Neural network analyzing your cognitive number selection...",
-            "Decrypting your mental number signature...",
-            "Synchronizing thought waves with numeric frequencies...",
-            "Calibrating psycho-numeric prediction model...",
-            "Extracting hidden numerical consciousness..."
-        ]
+        # Update packet and increment round
+        st.session_state.packet = collect_packets(row_num, first_packet, second_packet, third_packet)
+        st.session_state.round += 1
 
-    def create_card_display(self, card):
-        """Create an attractive card display"""
-        st.markdown(f"""
-        ### {card['title']}
-        *{card['hint']}*
-        
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;  
-                     border-radius: 10px; 
-                     padding: 15px;">
-            {''.join([f'<div style="background-color: #2C3E50; color: #ECF0F1; padding: 10px; border-radius: 5px; min-width: 40px; text-align: center; border: 1px solid #34495E;">{num}</div>' for num in card['numbers']])}
-        </div>
-        """, unsafe_allow_html=True)
-
-    def magic_trick_app(self):
-        # Dark mode custom CSS
-        st.markdown("""
-        <style>
-        .stApp {
-            background-color: #121212;
-            color: #FFFFFF;
-        }
-        .stMarkdown, .stTitle, .stButton>button {
-            color: #FFFFFF !important;
-        }
-        .stInfo {
-            background-color: #1E1E1E !important;
-            color: #BB86FC !important;
-            border-color: #BB86FC !important;
-        }
-        .stButton>button {
-            background-color: #BB86FC !important;
-            color: #000000 !important;
-        }
-        .stButton>button:hover {
-            background-color: #3700B3 !important;
-            color: #FFFFFF !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
-        # Initialize session state
-        if 'step' not in st.session_state:
-            st.session_state.step = 0
-            st.session_state.secret_number = 0
-            st.session_state.ai_mode = False
-
-        # Title with magic flair
-        st.title("🔮 Quantum Mind Reading Experience 🌟")
-        
-        # AI Mode Toggle
-        st.session_state.ai_mode = st.checkbox("🤖 Activate AI Prediction Mode", 
-                                               help="Enhance the mystical experience with AI-like narration")
-
-        # Trick progression
-        if st.session_state.step < len(self.magic_cards):
-            current_card = self.magic_cards[st.session_state.step]
-            
-            # AI-like narration if mode is on
-            if st.session_state.ai_mode:
-                st.info(random.choice(self.ai_explanations))
-            
-            # Display current card
-            self.create_card_display(current_card)
-            
-            # User interaction
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                if st.button("✅ YES, My Number is Here"):
-                    st.session_state.secret_number += current_card['numbers'][0]
-                    st.session_state.step += 1
-                    st.rerun()
-            
-            with col2:
-                if st.button("❌ NO, My Number is Not Here"):
-                    st.session_state.step += 1
-                    st.rerun()
-
-        # Final reveal
-        else:
+        # Check if we've completed 3 rounds
+        if st.session_state.round >= 3:
             st.balloons()
+            st.success(f"Your card is the: {st.session_state.packet[10]}")
             
-            # Dramatic reveal with AI flair
-            if st.session_state.ai_mode:
-                st.markdown("### 🌐 Quantum Prediction Complete!")
-                st.write("Processing final cognitive resonance...")
-                st.write("Synchronizing thought patterns...")
-            
-            st.title(f"🎉 Your Number is Magically... {st.session_state.secret_number}! 🎉")
-            
-            # Play Again
-            if st.button("🔁 Play Again"):
-                st.session_state.step = 0
-                st.session_state.secret_number = 0
-                st.rerun()
+            # Reset the game
+            st.button("Play Again")
+            st.session_state.round = 0
+            st.experimental_rerun()
 
-# Run the Streamlit app
 def main():
-    trick = MindReadingTrick()
-    trick.magic_trick_app()
+    twenty_one_card_trick()
 
 if __name__ == "__main__":
     main()
